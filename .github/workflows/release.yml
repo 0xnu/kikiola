@@ -16,4 +16,4 @@ jobs:
           changelog: CHANGELOG.md
           branch: main
         env:
-          GITHUB_TOKEN: ${{ secrets.OXNU_TOKEN }}
+          OXNU_TOKEN: ${{ secrets.OXNU_TOKEN }}
