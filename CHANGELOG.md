@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.4 - 2024-03-27
+* JavaScript and Python Tutorials
+
 ## 1.0.3 - 2024-03-27
 * GitHub Action
 
