@@ -53,7 +53,7 @@ Kikiola provides the following API endpoints:
 +  `POST /vectors`: Insert a new vector
 +  `GET /vectors/{id}`: Retrieve a vector by ID
 +  `DELETE /vectors/{id}`: Delete a vector by ID
-+  `POST /search`: Search for the nearest neighbors of a vector
++  `POST /search`: Search for the nearest neighbours of a vector
 
 #### cURL Examples
 
@@ -84,7 +84,7 @@ curl -X GET http://localhost:3400/vectors/vector1
 curl -X DELETE http://localhost:3400/vectors/vector1
 ```
 
-4. Search for the nearest neighbors of a vector:
+4. Search for the nearest neighbours of a vector:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{

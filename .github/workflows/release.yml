@@ -16,4 +16,4 @@ jobs:
           changelog: CHANGELOG.md
           branch: main
         env:
-          OXNU_TOKEN: ${{ secrets.OXNU_TOKEN }}
+          token: ${{ secrets.OXNU_TOKEN }}
