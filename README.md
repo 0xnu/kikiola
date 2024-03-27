@@ -108,7 +108,7 @@ go get github.com/0xnu/kikiola
 
 2. Import the necessary packages in your Go code:
 
-```sh
+```go
 import (
     "github.com/0xnu/kikiola/pkg/db"
     "github.com/0xnu/kikiola/pkg/server"
@@ -117,7 +117,7 @@ import (
 
 3. Create a new storage instance and server:
 
-```sh
+```go
 storage, err := db.NewStorage("data/vectors.db")
 if err != nil {
     log.Fatal(err)
@@ -129,12 +129,17 @@ server := server.NewServer(storage)
 
 4. Start the Kikiola server:
 
-```sh
+```go
 log.Fatal(server.Start(":9090"))
 ```
 
 Now, you can use Kikiola's functionality in your application or system by making HTTP requests to the appropriate endpoints.
 
+### Additional Integrations
+
+[JavaScript](./tutorials/javascript.md) - [Python](./tutorials/python.md)
+
+Follow the tutorials below to integrate Kikiola and vector search into your current application.
 
 ### Kikiola Embedding Performance Benchmarks
 
