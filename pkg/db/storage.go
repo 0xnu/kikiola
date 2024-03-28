@@ -10,15 +10,12 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
-// Storage represents the storage layer for vectors.
 type Storage struct {
 	db    *buntdb.DB
 	mutex sync.RWMutex
 }
 
-// NewStorage creates a new instance of Storage.
 func NewStorage(dbPath string) (*Storage, error) {
-	// Create the data directory if it doesn't exist
 	err := os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create data directory: %v", err)
@@ -36,7 +33,6 @@ func NewStorage(dbPath string) (*Storage, error) {
 	return storage, nil
 }
 
-// Insert inserts a vector into the storage.
 func (s *Storage) Insert(vector *Vector) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -57,7 +53,6 @@ func (s *Storage) Insert(vector *Vector) error {
 	return nil
 }
 
-// Get retrieves a vector from the storage by ID.
 func (s *Storage) Get(id string) (*Vector, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -84,7 +79,6 @@ func (s *Storage) Get(id string) (*Vector, error) {
 	return &vector, nil
 }
 
-// Delete removes a vector from the storage by ID.
 func (s *Storage) Delete(id string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -100,7 +94,6 @@ func (s *Storage) Delete(id string) error {
 	return nil
 }
 
-// GetAll retrieves all vectors from the storage.
 func (s *Storage) GetAll() ([]*Vector, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
@@ -125,7 +118,6 @@ func (s *Storage) GetAll() ([]*Vector, error) {
 	return vectors, nil
 }
 
-// Close closes the storage and performs any necessary cleanup.
 func (s *Storage) Close() error {
 	return s.db.Close()
 }

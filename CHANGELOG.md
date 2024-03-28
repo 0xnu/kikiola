@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.5 - 2024-03-28
+* Tensor Compression
+
 ## 1.0.4 - 2024-03-27
 * JavaScript and Python Tutorials
 

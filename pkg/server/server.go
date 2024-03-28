@@ -9,13 +9,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Server represents the server-side functionality.
 type Server struct {
 	storage *db.Storage
 	index   *index.Index
 }
 
-// NewServer creates a new instance of Server.
 func NewServer(storage *db.Storage, index *index.Index) *Server {
 	return &Server{
 		storage: storage,
@@ -23,17 +21,14 @@ func NewServer(storage *db.Storage, index *index.Index) *Server {
 	}
 }
 
-// Start starts the server and listens for incoming requests.
 func (s *Server) Start(addr string) error {
 	router := s.Router()
 	return http.ListenAndServe(addr, router)
 }
 
-// Router returns the router used by the server.
 func (s *Server) Router() *mux.Router {
 	router := mux.NewRouter()
 
-	// Register routes
 	router.HandleFunc("/vectors", s.handleInsertVector).Methods("POST")
 	router.HandleFunc("/vectors/{id}", s.handleGetVector).Methods("GET")
 	router.HandleFunc("/vectors/{id}", s.handleDeleteVector).Methods("DELETE")
@@ -42,7 +37,6 @@ func (s *Server) Router() *mux.Router {
 	return router
 }
 
-// handleInsertVector handles the insertion of a new vector.
 func (s *Server) handleInsertVector(w http.ResponseWriter, r *http.Request) {
 	var vector db.Vector
 	err := json.NewDecoder(r.Body).Decode(&vector)
@@ -60,7 +54,6 @@ func (s *Server) handleInsertVector(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// handleGetVector handles the retrieval of a vector by ID.
 func (s *Server) handleGetVector(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
@@ -73,7 +66,6 @@ func (s *Server) handleGetVector(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(vector)
 }
 
-// handleDeleteVector handles the deletion of a vector by ID.
 func (s *Server) handleDeleteVector(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
@@ -86,7 +78,6 @@ func (s *Server) handleDeleteVector(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// handleSearchVectors handles the search for nearest neighbors of a vector.
 func (s *Server) handleSearchVectors(w http.ResponseWriter, r *http.Request) {
 	var searchReq SearchRequest
 	err := json.NewDecoder(r.Body).Decode(&searchReq)
@@ -104,7 +95,6 @@ func (s *Server) handleSearchVectors(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
-// SearchRequest represents the request payload for vector search.
 type SearchRequest struct {
 	Vector *db.Vector `json:"vector"`
 	K      int        `json:"k"`

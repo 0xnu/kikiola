@@ -63,7 +63,7 @@ Here are some examples of how to use Kikiola with cURL:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
-  "id": "vector1",
+  "id": "badf35f6-e291-46cb-986b-01d57e6df80b",
   "embedding": [0.1, 0.2, 0.3],
   "metadata": {
     "name": "Vector 1",
@@ -75,13 +75,13 @@ curl -X POST -H "Content-Type: application/json" -d '{
 2. Retrieve a vector by ID:
 
 ```sh
-curl -X GET http://localhost:3400/vectors/vector1
+curl -X GET http://localhost:3400/vectors/badf35f6-e291-46cb-986b-01d57e6df80b
 ```
 
 3. Delete a vector by ID:
 
 ```sh
-curl -X DELETE http://localhost:3400/vectors/vector1
+curl -X DELETE http://localhost:3400/vectors/badf35f6-e291-46cb-986b-01d57e6df80b
 ```
 
 4. Search for the nearest neighbours of a vector:
@@ -94,6 +94,27 @@ curl -X POST -H "Content-Type: application/json" -d '{
   },
   "k": 5
 }' http://localhost:3400/search
+```
+
+5. Tensor Compression:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d '{
+  "id": "f5fbc794-c23a-4924-85af-775d4d34ecde",
+  "embedding": [0.1, 0.2, 0.3],
+  "metadata": {
+    "name": "Tensor Compression",
+    "category": "sample"
+  },
+  "compressed": true,
+  "quantizationParams": {
+    "min": -1.0,
+    "max": 1.0,
+    "bits": 8
+  },
+  "pruningMask": [false, true, false],
+  "sparseIndices": [0, 2]
+}' http://localhost:3400/vectors
 ```
 
 ### Integration with Other Applications or Systems
@@ -145,12 +166,21 @@ Follow the tutorials below to integrate Kikiola and vector search into your curr
 
 You can execute `benchmark.go` to test the performance of Kikiola when embedding 1,000,000 records: `go run benchmark.go`
 
-| Metric          | Value            |
-|----------------|-------------------|
-| Number of vectors | 1,000,000        |
-| Vector dimension  | 128              |
-| Embedding time    | 1m 41.964261347s |
+| Metric            | Value                |
+|-------------------|----------------------|
+|                   |                      |
+27-03-2024
+| Number of vectors | 1,000,000            |
+| Vector dimension  | 128                  |
+| Embedding time    | 1m 41.964261347s     |
 | Embedding speed   | 9,807.36 vectors/sec |
+28-03-2024
+| Number of vectors | 1,000,000            |
+| Vector dimension  | 128                  |
+| Embedding time    | 1m 53.342241584s     |
+| Embedding speed   | 8,822.84 vectors/sec |
+
+The tables are now combined into a single table, with the dates as separate rows above each section of metrics.
 
 The benchmark results provide insights into the performance of Kikiola when embedding vectors. Let's examine the results:
 
