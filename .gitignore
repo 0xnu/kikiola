@@ -1,0 +1,8 @@
+# Others
+.vscode
+create.sh
+push.sh
+cmd/data
+cmd/data/vectors.db
+/data
+/data/vectors.db
