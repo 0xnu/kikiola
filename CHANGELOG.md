@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6 - 2024-03-29
+* Refinements
+
 ## 1.0.5 - 2024-03-28
 * Tensor Compression
 
