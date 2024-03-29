@@ -1,4 +1,4 @@
-## Kikiola - Generate and Store Embeddings
+## Kikiola - Generate and Store Embeddings - PDF
 
 Below is an example of generating embeddings from a PDF document using the OpenAI API. It extracts text from a PDF, generates embeddings using the [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings) model, and stores the embeddings in Kikiola. You can use the stored embeddings for various use cases, such as [Retrieval Augmented Generation](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/) (RAG).
 
