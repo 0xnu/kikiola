@@ -1,6 +1,6 @@
 ## Kikiola - Generate and Store Embeddings
 
-The below example demonstrates how to generate embeddings from a document or images using OpenAI API. It supports formats such as `.PDF`, `.CSV`, `.XLSX`, `.JPG`, `.PNG`, `.WEBP`, and `.GIF`. It takes the document or images, extracts text, and uses the [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings) model to generate embeddings before storing them in Kikiola. You can use the stored embeddings for various use cases, such as [Retrieval Augmented Generation](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/) (RAG).
+The below example demonstrates how to generate embeddings from a document or images using OpenAI API. It supports formats such as `.pdf`, `.csv`, `.xlsx`, `.jpg`, `.png`, `.webp`, and `.gif`. It takes the document or images, extracts text, and uses the [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings) model to generate embeddings before storing them in Kikiola. You can use the stored embeddings for various use cases, such as [Retrieval Augmented Generation](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/) (RAG).
 
 1. Install the required libraries if you haven't already:
 
