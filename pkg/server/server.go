@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -12,6 +13,7 @@ import (
 type Server struct {
 	storage *db.Storage
 	index   *index.Index
+	server  *http.Server
 }
 
 func NewServer(storage *db.Storage, index *index.Index) *Server {
@@ -24,6 +26,10 @@ func NewServer(storage *db.Storage, index *index.Index) *Server {
 func (s *Server) Start(addr string) error {
 	router := s.Router()
 	return http.ListenAndServe(addr, router)
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }
 
 func (s *Server) Router() *mux.Router {

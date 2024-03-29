@@ -69,6 +69,29 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/vectors
 ```
 
+6. Bioinformatics — Storing and Analysing Gene Sequences:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d '{
+  "id": "badf35f6-e291-46cb-862d-01d57e6df80b",
+  "embedding": [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1,
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ],  // Placeholder for the actual embedding
+  "metadata": {
+    "name": "Gene Sequence 1",
+    "category": "gene",
+    "sequence": "ACGTACGT" // Placeholder for the actual gene sequence
+  }
+}' http://localhost:3400/vectors
+```
+
 ### Integration with Other Applications or Systems
 
 To use Kikiola in your Go applications or systems, follow these steps:

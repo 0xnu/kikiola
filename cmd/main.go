@@ -1,7 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/0xnu/kikiola/pkg/db"
 	"github.com/0xnu/kikiola/pkg/index"
@@ -9,25 +15,54 @@ import (
 )
 
 func main() {
-	// Initialise the storage
-	storage, err := db.NewStorage("data/vectors.db")
+	// Read configuration from environment variables
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "data/vectors.db"
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3400"
+	}
+
+	// Initialize the storage
+	storage, err := db.NewStorage(dbPath)
 	if err != nil {
-		log.Fatalf("Failed to initialise storage: %v", err)
+		log.Fatalf("Failed to initialize storage: %v", err)
 	}
 	defer storage.Close()
 
-	// Initialise the index
+	// Initialize the index
 	index, err := index.NewIndex(storage)
 	if err != nil {
-		log.Fatalf("Failed to initialise index: %v", err)
+		log.Fatalf("Failed to initialize index: %v", err)
 	}
 
-	// Initialise the server
+	// Initialize the server
 	server := server.NewServer(storage, index)
 
 	// Start the server
-	log.Println("Starting server on port 3400...")
-	if err := server.Start(":3400"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	log.Printf("Starting server on port %s...", port)
+	go func() {
+		if err := server.Start(":" + port); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	// Wait for termination signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+
+	// Create a deadline to wait for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Shutdown the server gracefully
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
+
+	log.Println("Server exited properly")
 }
