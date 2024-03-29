@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.7 - 2024-03-29
+* Generate and Store Embeddings Tutorial
+
 ## 1.0.6 - 2024-03-29
 * Refinements
 
