@@ -51,7 +51,7 @@ The Kikiola server will start running on `http://localhost:3400`.
 
 + [Usage](./USAGE.md)
 + [Benchmark](./BENCHMARK.md)
-+ [Generate and Store Embeddings](./tutorials/pdf_embeddings.md) - PDF
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings.md) - .PDF, .CSV, .XLSX, .JPG, .PNG, .WEBP, .GIF
 
 ### License
 
