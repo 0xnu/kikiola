@@ -4,24 +4,24 @@ To push the [Kikiola Docker image](https://hub.docker.com/r/0xnu20/kikiola/) to 
 
 1. Push the Docker image to Amazon ECR:
 
-+ Open the Amazon ECR console and create a new repository for your Docker image.
-+ Tag your Docker image with the ECR repository URL:
+    + Open the Amazon ECR console and create a new repository for your Docker image.
+    + Tag your Docker image with the ECR repository URL:
 
-```sh
-docker tag 0xnu20/kikiola:latest your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
-```
+    ```sh
+    docker tag 0xnu20/kikiola:latest your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
+    ```
 
-+ Authenticate your Docker client with ECR:
+    + Authenticate your Docker client with ECR:
 
-```sh
-aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-aws-account-id.dkr.ecr.your-region.amazonaws.com
-```
+    ```sh
+    aws ecr get-login-password --region your-region | docker login --username AWS --password-stdin your-aws-account-id.dkr.ecr.your-region.amazonaws.com
+    ```
 
-+ Push the tagged image to ECR:
+    + Push the tagged image to ECR:
 
-```sh
-docker push your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
-```
+    ```sh
+    docker push your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-repository-name:latest
+    ```
 
 2. Create a new Lambda function:
 

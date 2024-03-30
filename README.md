@@ -52,6 +52,7 @@ The Kikiola server will start running on `http://localhost:3400`.
 + [Usage](./docs/USAGE.md)
 + [Docker](./docs/DOCKER.md)
 + [Amazon Web Services (AWS)](./docs/AWS.md)
++ [Microsoft Azure](./docs/AZURE.md)
 + [Benchmark](./docs/BENCHMARK.md)
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_docs_images.md) - Documents and Images
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome.md) - Genome Sequence
