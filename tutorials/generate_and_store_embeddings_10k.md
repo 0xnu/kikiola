@@ -159,7 +159,7 @@ if __name__ == "__main__":
     embeddings_generator.extract_items()
     embeddings_generator.generate_embeddings()
     embeddings_generator.store_embeddings()
-    print("Kikiola K-10 Embeddings Completed.")
+    print("Kikiola 10-K Embeddings Completed.")
 ```
 
 > Before running the Python code, ensure the Kikiola server is running and accessible at the specified URL and port (e.g., `http://localhost:3400`).
