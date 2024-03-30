@@ -1,4 +1,4 @@
-## Using 0xnu20/kikiola:latest Docker Image
+## Using Kikiola Docker Image
 
 Below is how you can utilise [Kikiola Docker Image](https://hub.docker.com/r/0xnu20/kikiola) in your project.
 
