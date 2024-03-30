@@ -4,7 +4,7 @@ Below is how you can utilise [Kikiola Docker Image](https://hub.docker.com/r/0xn
 
 ### Prerequisites
 
-- Docker installed on your system
+- [Docker](https://docs.docker.com/engine/install/) installed on your system
 
 ### Usage
 
