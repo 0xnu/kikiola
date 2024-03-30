@@ -11,13 +11,9 @@ Below is how you can utilise [Kikiola Docker Image](https://hub.docker.com/r/0xn
 1. Pull the Docker image: `docker pull 0xnu20/kikiola:latest`.
 
 
-2. Run a container from the image: `docker run -p 3400:3400 0xnu20/kikiola:latest`.
+2. Run a container from the image: `docker run -p 3400:3400 0xnu20/kikiola:latest`. This command starts a container from the `0xnu20/kikiola:latest` image and maps port 3400 from the container to port 3400 on the host machine.
 
-This command starts a container from the `0xnu20/kikiola:latest` image and maps port 3400 from the container to port 3400 on the host machine.
-
-3. Access the application:
-
-The Golang Endpoints inside the container will be accessible at `http://localhost:3400`.
+3. Access the application: The Golang Endpoints inside the container will be accessible at `http://localhost:3400`.
 
 ### Additional Information
 
