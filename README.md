@@ -51,9 +51,10 @@ The Kikiola server will start running on `http://localhost:3400`.
 
 + [Usage](./USAGE.md)
 + [Benchmark](./BENCHMARK.md)
-+ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_videos.md) - Videos
-+ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome.md) - Genome Sequence
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_docs_images.md) - Documents and Images
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome.md) - Genome Sequence
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_videos.md) - Videos
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_audios.md) - Audios
 
 ### License
 
