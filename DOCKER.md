@@ -20,3 +20,4 @@ Below is how you can utilise [Kikiola Docker Image](https://hub.docker.com/r/0xn
 - The `0xnu20/kikiola:latest` image is built from a Golang package and exposes port 3400.
 - The image is configured to start the Golang application when the container runs automatically.
 - Refer to the Docker documentation for more advanced usage options to customise the container's behaviour or pass environment variables.
+- Utilising [Alpine Linux](https://www.alpinelinux.org/)—the docker image size is 7 MB.
