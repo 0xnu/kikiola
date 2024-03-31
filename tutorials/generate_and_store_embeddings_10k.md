@@ -39,7 +39,7 @@ class Kikiola10KEmbedding:
         if self.api_key is None:
             raise ValueError("OPENAI_API_KEY environment variable not set.")
         self.url = url
-        self.tsla_10k = self.load_10k()
+        self.sec_10k = self.load_10k()
         self.prompt = """
         You are an expert at extracting text data from SEC filings like 10-Ks, 10-Qs, etc.
         Your sole job is to take a chunk of text and classify which Item in the SEC filing it belongs to.
@@ -100,7 +100,7 @@ class Kikiola10KEmbedding:
         return completion.choices[0].message.content
 
     def extract_items(self) -> None:
-        filing_text = self.tsla_10k.replace("\n", " ")
+        filing_text = self.sec_10k.replace("\n", " ")
         chunk_size = 4096
         chunks = self.split_text_into_chunks(filing_text, chunk_size)
 

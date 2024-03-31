@@ -135,4 +135,4 @@ Now, you can use Kikiola's functionality in your application or system by making
 
 Follow the tutorials below to integrate Kikiola and vector search into your current application.
 
-[JavaScript](./tutorials/javascript.md) - [Python](./tutorials/python.md)
+[JavaScript](../tutorials/javascript.md) - [Python](../tutorials/python.md)
