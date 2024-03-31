@@ -107,7 +107,8 @@ curl -X PATCH "http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb867
 ```
 
 9. Hybrid search (combining sparse embedding and traditional keyword search)
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -119,7 +120,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 10. Reranking of search results
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -131,7 +133,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 11. Setting Alpha value (influence factor) for hybrid search
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -144,7 +147,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 12. Support for more distance/similarity metrics beyond just cosine similarity
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -156,7 +160,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 13. ANN (Approximate Nearest Neighbor) indexing for faster search on large datasets
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -171,7 +176,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 14. Ability to explain individual search results
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
@@ -183,7 +189,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ```
 
 15. Customizable relevance tuning and boosting of results
-```
+
+```sh
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
