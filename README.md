@@ -47,7 +47,7 @@ go run cmd/main.go
 
 The Kikiola server will start running on `http://localhost:3400`.
 
-### Usage and Benchmark
+### Usage, Use Cases, and Benchmark
 
 + [Usage](./docs/USAGE.md)
 + [Docker](./docs/DOCKER.md)
