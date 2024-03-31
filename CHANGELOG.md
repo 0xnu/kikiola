@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.9 - 2024-03-31
+* Retrieve the original text content associated with an embedding ID
+
 ## 1.0.8 - 2024-03-30
 * Docker
 
