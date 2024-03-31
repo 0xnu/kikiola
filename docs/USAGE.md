@@ -106,6 +106,97 @@ curl -X GET "http://localhost:3400/query/83635f86-56b3-4bdd-a9bf-428dcebb8674"
 curl -X PATCH "http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb8674/metadata" -H "Content-Type: application/json" -d '{"metadata": {"name": "PDF Embeddings", "category": "pdf"}}'
 ```
 
+9. Hybrid search (combining sparse embedding and traditional keyword search)
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3],
+    "Metadata": {"text": "search keywords"}
+  },
+  "k": 10
+}' http://localhost:3400/search
+```
+
+10. Reranking of search results
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3]
+  },
+  "k": 10,
+  "rerank": true
+}' http://localhost:3400/search
+```
+
+11. Setting Alpha value (influence factor) for hybrid search
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3],
+    "Metadata": {"text": "search keywords"}
+  },
+  "k": 10,
+  "alpha": 0.7
+}' http://localhost:3400/search
+```
+
+12. Support for more distance/similarity metrics beyond just cosine similarity
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3]
+  },
+  "k": 10,
+  "metric": "euclidean"
+}' http://localhost:3400/search
+```
+
+13. ANN (Approximate Nearest Neighbor) indexing for faster search on large datasets
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3]
+  },
+  "k": 10,
+  "indexType": "annoy",
+  "params": {
+    "n_trees": 10
+  }
+}' http://localhost:3400/search
+```
+
+14. Ability to explain individual search results
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3]
+  },
+  "k": 10,
+  "explain": true
+}' http://localhost:3400/search
+```
+
+15. Customizable relevance tuning and boosting of results
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "vector": {
+    "ID": "query_vector",
+    "Embedding": [0.1, 0.2, 0.3]
+  },
+  "k": 10,
+  "boost": {
+    "category": "sample",
+    "weight": 2.0
+  }
+}' http://localhost:3400/search
+```
+
 ### Integration with Other Applications or Systems
 
 To use Kikiola in your Go applications or systems, follow these steps:
