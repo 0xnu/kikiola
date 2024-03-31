@@ -5,6 +5,7 @@ Kikiola provides the following API endpoints:
 +  `POST /vectors`: Insert a new vector
 +  `GET /vectors/{id}`: Retrieve a vector by ID
 +  `DELETE /vectors/{id}`: Delete a vector by ID
++  `GET /query/{id}`: Retrieve the original text content associated with an embedding ID
 +  `POST /search`: Search for the nearest neighbours of a vector
 
 #### cURL Examples
@@ -90,6 +91,12 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "sequence": "ACGTACGT" // Placeholder for the actual gene sequence
   }
 }' http://localhost:3400/vectors
+```
+
+7. Retrieve the original text content associated with an embedding ID
+
+```sh
+curl -X GET "http://localhost:3400/query/83635f86-56b3-4bdd-a9bf-428dcebb8674"
 ```
 
 ### Integration with Other Applications or Systems

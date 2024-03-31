@@ -14,7 +14,6 @@ import (
 )
 
 func TestVectorDatabase(t *testing.T) {
-	// Create a new instance of the server
 	storage, err := db.NewStorage("data/test_vectors.db")
 	assert.NoError(t, err)
 	defer storage.Close()
@@ -23,16 +22,13 @@ func TestVectorDatabase(t *testing.T) {
 	assert.NoError(t, err)
 
 	server := server.NewServer(storage, index)
-
-	// Create a test HTTP server
 	ts := httptest.NewServer(server.Router())
 	defer ts.Close()
 
-	// Test adding multiple entries
 	entries := []db.Vector{
-		{ID: "vector1", Embedding: []float64{0.1, 0.2, 0.3}, Metadata: map[string]string{"name": "Vector 1", "category": "sample"}},
-		{ID: "vector2", Embedding: []float64{0.4, 0.5, 0.6}, Metadata: map[string]string{"name": "Vector 2", "category": "sample"}},
-		{ID: "vector3", Embedding: []float64{0.7, 0.8, 0.9}, Metadata: map[string]string{"name": "Vector 3", "category": "sample"}},
+		{ID: "vector1", Embedding: []float64{0.1, 0.2, 0.3}, Metadata: map[string]string{"name": "Vector 1", "category": "sample"}, Text: "This is the text content for vector1."},
+		{ID: "vector2", Embedding: []float64{0.4, 0.5, 0.6}, Metadata: map[string]string{"name": "Vector 2", "category": "sample"}, Text: "This is the text content for vector2."},
+		{ID: "vector3", Embedding: []float64{0.7, 0.8, 0.9}, Metadata: map[string]string{"name": "Vector 3", "category": "sample"}, Text: "This is the text content for vector3."},
 	}
 
 	for _, entry := range entries {
@@ -42,7 +38,6 @@ func TestVectorDatabase(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 	}
 
-	// Test retrieving one entry
 	resp, err := http.Get(ts.URL + "/vectors/vector2")
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -52,21 +47,18 @@ func TestVectorDatabase(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, entries[1], retrievedEntry)
 
-	// Test posting one entry
-	newEntry := db.Vector{ID: "vector4", Embedding: []float64{0.2, 0.4, 0.6}, Metadata: map[string]string{"name": "Vector 4", "category": "sample"}}
+	newEntry := db.Vector{ID: "vector4", Embedding: []float64{0.2, 0.4, 0.6}, Metadata: map[string]string{"name": "Vector 4", "category": "sample"}, Text: "This is the text content for vector4."}
 	jsonData, _ := json.Marshal(newEntry)
 	resp, err = http.Post(ts.URL+"/vectors", "application/json", bytes.NewBuffer(jsonData))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
-	// Test deleting one entry
 	req, err := http.NewRequest(http.MethodDelete, ts.URL+"/vectors/vector1", nil)
 	assert.NoError(t, err)
 	resp, err = http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 
-	// Test searching
 	searchReq := struct {
 		Vector *db.Vector `json:"vector"`
 		K      int        `json:"k"`
@@ -83,4 +75,15 @@ func TestVectorDatabase(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&searchResults)
 	assert.NoError(t, err)
 	assert.Len(t, searchResults, 2)
+
+	resp, err = http.Get(ts.URL + "/query/vector2")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var queryResult struct {
+		Text string `json:"text"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&queryResult)
+	assert.NoError(t, err)
+	assert.Equal(t, "This is the text content for vector2.", queryResult.Text)
 }

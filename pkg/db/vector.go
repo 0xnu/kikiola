@@ -9,6 +9,7 @@ type Vector struct {
 	ID                 string
 	Embedding          []float64
 	Metadata           map[string]string
+	Text               string
 	Compressed         bool
 	QuantizationParams *QuantizationParams
 	PruningMask        []bool

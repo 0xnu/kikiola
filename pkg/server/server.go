@@ -38,6 +38,7 @@ func (s *Server) Router() *mux.Router {
 	router.HandleFunc("/vectors", s.handleInsertVector).Methods("POST")
 	router.HandleFunc("/vectors/{id}", s.handleGetVector).Methods("GET")
 	router.HandleFunc("/vectors/{id}", s.handleDeleteVector).Methods("DELETE")
+	router.HandleFunc("/query/{id}", s.handleQueryVector).Methods("GET")
 	router.HandleFunc("/search", s.handleSearchVectors).Methods("POST")
 
 	return router
@@ -58,6 +59,23 @@ func (s *Server) handleInsertVector(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s *Server) handleQueryVector(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	vector, err := s.storage.Get(id)
+	if err != nil {
+		http.Error(w, "Vector not found", http.StatusNotFound)
+		return
+	}
+
+	response := struct {
+		Text string `json:"text"`
+	}{
+		Text: vector.Text,
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func (s *Server) handleGetVector(w http.ResponseWriter, r *http.Request) {

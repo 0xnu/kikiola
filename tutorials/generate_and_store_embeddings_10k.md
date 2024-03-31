@@ -21,6 +21,7 @@ import os
 import time
 import uuid
 import requests
+import json
 from pydantic import BaseModel
 from typing import List, Optional
 from openai import OpenAI
@@ -62,14 +63,14 @@ class Kikiola10KEmbedding:
         Your response should be formatted as a valid JSON list, like ["Item 1", "Item 1A"] or [].
         """
         self.items_map = {
-            "Item 1": [],
-            "Item 1A": [],
-            "Item 2": [],
-            "Item 3": [],
-            "Item 7": [],
-            "Item 7A": [],
-            "Item 8": [],
-            "unknown": [],
+            "Item 1": "",
+            "Item 1A": "",
+            "Item 2": "",
+            "Item 3": "",
+            "Item 7": "",
+            "Item 7A": "",
+            "Item 8": "",
+            "unknown": "",
         }
         self.embeddings = []
 
@@ -83,7 +84,7 @@ class Kikiola10KEmbedding:
             chunks.append(text[i:i + chunk_size])
         return chunks
 
-    def classify_items(self, chunk: str) -> ItemResponse:
+    def classify_items(self, chunk: str) -> List[str]:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -97,7 +98,13 @@ class Kikiola10KEmbedding:
                 },
             ],
         )
-        return completion.choices[0].message.content
+        response_text = completion.choices[0].message.content.strip()
+        try:
+            items = json.loads(response_text)
+        except json.JSONDecodeError:
+            print(f"Invalid JSON response: {response_text}")
+            items = []
+        return items
 
     def extract_items(self) -> None:
         filing_text = self.sec_10k.replace("\n", " ")
@@ -107,13 +114,12 @@ class Kikiola10KEmbedding:
         start_time = time.time()
 
         for index, chunk in enumerate(chunks):
-            response = self.classify_items(chunk)
-            items = eval(response)
+            items = self.classify_items(chunk)
             print(f"Chunk {index}. Items: {items}")
 
             for item in items:
                 if item in self.items_map:
-                    self.items_map[item].append(chunk)
+                    self.items_map[item] += chunk
 
             time.sleep(1)
 
@@ -124,20 +130,21 @@ class Kikiola10KEmbedding:
         self.embeddings = []
         document_uuid = str(uuid.uuid4())
 
-        for item_name, chunks in self.items_map.items():
-            document_text = "\n".join(chunks)
-            response = client.embeddings.create(
-                model="text-embedding-3-large",
-                input=document_text
-            )
-            self.embeddings.append({
-                "id": f"{document_uuid}_{item_name.replace(' ', '')}",
-                "embedding": response.data[0].embedding,
-                "metadata": {
-                    "name": "sec_filing",
-                    "category": "securities"
-                }
-            })
+        for item_name, item_text in self.items_map.items():
+            if item_text.strip():
+                response = client.embeddings.create(
+                    model="text-embedding-3-large",
+                    input=item_text
+                )
+                self.embeddings.append({
+                    "ID": f"{document_uuid}_{item_name.replace(' ', '')}",
+                    "Embedding": response.data[0].embedding,
+                    "Metadata": {
+                        "name": "sec_filing",
+                        "category": "securities"
+                    },
+                    "Text": item_text
+                })
 
     def store_embeddings(self) -> None:
         server_url = "http://localhost:3400/vectors"
@@ -146,12 +153,12 @@ class Kikiola10KEmbedding:
             try:
                 response = requests.post(server_url, json=vector_data)
                 if response.status_code == 200:
-                    print(f"Embeddings stored for {vector_data['id']}. Status code: {response.status_code}")
+                    print(f"Embeddings stored for {vector_data['ID']}. Status code: {response.status_code}")
                 else:
-                    print(f"Error storing embeddings for {vector_data['id']}. Status code: {response.status_code}")
+                    print(f"Error storing embeddings for {vector_data['ID']}. Status code: {response.status_code}")
                     print(f"Error response: {response.text}")
             except requests.exceptions.RequestException as e:
-                print(f"Error storing embeddings for {vector_data['id']}: {e}")
+                print(f"Error storing embeddings for {vector_data['ID']}: {e}")
 
 if __name__ == "__main__":
     url = "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"

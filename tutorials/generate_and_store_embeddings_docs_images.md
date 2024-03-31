@@ -85,13 +85,14 @@ class KikiolaEmbedding:
             "metadata": {
                 "name": "Document Embeddings",
                 "category": "document"
-            }
+            },
+            "Text": self.document_text
         }
         response = requests.post("http://localhost:3400/vectors", json=vector_data)
         print(f"Embeddings stored. Status code: {response.status_code}")
 
 if __name__ == "__main__":
-    document_path_or_url = "nano_bytes.gif"
+    document_path_or_url = "company_manual.pdf"
     embeddings_generator = KikiolaEmbedding()
     embeddings_generator.load_document(document_path_or_url)
     embeddings_generator.generate_embeddings()
