@@ -17,9 +17,9 @@ Kikiola is a high-performance vector database written in [Go](https://go.dev). I
 + Text embedding support for text-based queries
 + Tensor Compression
 
-### Installation
+### Run
 
-To install Kikiola, ensure that you have Go installed on your system. Then, follow these steps:
+To run Kikiola, ensure that you have Go installed on your system. Then, follow these steps:
 
 1. Clone the Kikiola repository:
 
@@ -46,6 +46,14 @@ go run cmd/main.go
 ```
 
 The Kikiola server will start running on `http://localhost:3400`.
+
+### Test
+
+To test Kikiola, ensure that you have Go installed on your system. Then, follow these steps:
+
+```sh
+go test ./...
+```
 
 ### Usage, Use Cases, and Benchmark
 
