@@ -40,6 +40,7 @@ func (s *Server) Router() *mux.Router {
 	router.HandleFunc("/vectors/{id}", s.handleDeleteVector).Methods("DELETE")
 	router.HandleFunc("/query/{id}", s.handleQueryVector).Methods("GET")
 	router.HandleFunc("/search", s.handleSearchVectors).Methods("POST")
+	router.HandleFunc("/vectors/{id}/metadata", s.handleUpdateVectorMetadata).Methods("PATCH")
 
 	return router
 }
@@ -76,6 +77,31 @@ func (s *Server) handleQueryVector(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response)
+}
+
+func (s *Server) handleUpdateVectorMetadata(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	var updateReq struct {
+		Metadata map[string]string `json:"metadata"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&updateReq)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	err = s.storage.Update(id, updateReq.Metadata)
+	if err != nil {
+		if err.Error() == "vector not found" {
+			http.Error(w, "Vector not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to update vector metadata", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) handleGetVector(w http.ResponseWriter, r *http.Request) {

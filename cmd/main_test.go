@@ -86,4 +86,36 @@ func TestVectorDatabase(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&queryResult)
 	assert.NoError(t, err)
 	assert.Equal(t, "This is the text content for vector2.", queryResult.Text)
+
+	updateReq := struct {
+		Metadata map[string]string `json:"metadata"`
+	}{
+		Metadata: map[string]string{
+			"name":     "Updated Vector 2",
+			"category": "updated",
+		},
+	}
+	jsonData, _ = json.Marshal(updateReq)
+	req, err = http.NewRequest(http.MethodPatch, ts.URL+"/vectors/vector2/metadata", bytes.NewBuffer(jsonData))
+	assert.NoError(t, err)
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp, err = http.Get(ts.URL + "/vectors/vector2")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var updatedVector db.Vector
+	err = json.NewDecoder(resp.Body).Decode(&updatedVector)
+	assert.NoError(t, err)
+	assert.Equal(t, "Updated Vector 2", updatedVector.Metadata["name"])
+	assert.Equal(t, "updated", updatedVector.Metadata["category"])
+
+	jsonData, _ = json.Marshal(updateReq)
+	req, err = http.NewRequest(http.MethodPatch, ts.URL+"/vectors/nonexistent_vector/metadata", bytes.NewBuffer(jsonData))
+	assert.NoError(t, err)
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }

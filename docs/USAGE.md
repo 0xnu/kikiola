@@ -7,6 +7,7 @@ Kikiola provides the following API endpoints:
 +  `DELETE /vectors/{id}`: Delete a vector by ID
 +  `GET /query/{id}`: Retrieve the original text content associated with an embedding ID
 +  `POST /search`: Search for the nearest neighbours of a vector
++  `PATCH vectors/{id}/metadata`: Update the metadata of a vector
 
 #### cURL Examples
 
@@ -97,6 +98,12 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 ```sh
 curl -X GET "http://localhost:3400/query/83635f86-56b3-4bdd-a9bf-428dcebb8674"
+```
+
+8. Update the metadata of a vector
+
+```sh
+curl -X PATCH "http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb8674/metadata" -H "Content-Type: application/json" -d '{"metadata": {"name": "PDF Embeddings", "category": "pdf"}}'
 ```
 
 ### Integration with Other Applications or Systems

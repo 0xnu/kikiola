@@ -118,6 +118,51 @@ func (s *Storage) GetAll() ([]*Vector, error) {
 	return vectors, nil
 }
 
+func (s *Storage) Update(id string, metadata map[string]string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	var vector Vector
+	err := s.db.View(func(tx *buntdb.Tx) error {
+		val, err := tx.Get(id)
+		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return fmt.Errorf("vector not found")
+			}
+			return fmt.Errorf("failed to get vector: %v", err)
+		}
+
+		err = json.Unmarshal([]byte(val), &vector)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal vector: %v", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	for key, value := range metadata {
+		vector.Metadata[key] = value
+	}
+
+	data, err := json.Marshal(vector)
+	if err != nil {
+		return fmt.Errorf("failed to marshal vector: %v", err)
+	}
+
+	err = s.db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(id, string(data), nil)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update vector: %v", err)
+	}
+
+	return nil
+}
+
 func (s *Storage) Close() error {
 	return s.db.Close()
 }
