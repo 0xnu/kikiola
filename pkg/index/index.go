@@ -11,12 +11,12 @@ import (
 )
 
 type Index struct {
-	storage *db.Storage
+	storage *db.DistributedStorage
 	index   map[string][]*db.Vector
 	mutex   sync.RWMutex
 }
 
-func NewIndex(storage *db.Storage) (*Index, error) {
+func NewIndex(storage *db.DistributedStorage) (*Index, error) {
 	index := &Index{
 		storage: storage,
 		index:   make(map[string][]*db.Vector),

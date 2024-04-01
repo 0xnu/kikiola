@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -19,14 +20,19 @@ func main() {
 	if dbPath == "" {
 		dbPath = "data/vectors.db"
 	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3400"
 	}
 
-	storage, err := db.NewStorage(dbPath)
+	hostAddress := "localhost"
+
+	nodeAddresses := generateNodeAddresses(hostAddress, 3401, 3420)
+
+	storage, err := db.NewDistributedStorage(nodeAddresses)
 	if err != nil {
-		log.Fatalf("Failed to initialize storage: %v", err)
+		log.Fatalf("Failed to initialize distributed storage: %v", err)
 	}
 	defer storage.Close()
 
@@ -37,7 +43,7 @@ func main() {
 
 	server := server.NewServer(storage, index)
 
-	log.Printf("Starting server on port %s...", port)
+	log.Printf("Starting server on %s:%s...", hostAddress, port)
 	go func() {
 		if err := server.Start(":" + port); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to start server: %v", err)
@@ -47,8 +53,8 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
 
+	log.Println("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -57,4 +63,13 @@ func main() {
 	}
 
 	log.Println("Server exited properly")
+}
+
+func generateNodeAddresses(hostAddress string, startPort, endPort int) []string {
+	var nodeAddresses []string
+	for port := startPort; port <= endPort; port++ {
+		nodeAddress := hostAddress + ":" + strconv.Itoa(port)
+		nodeAddresses = append(nodeAddresses, nodeAddress)
+	}
+	return nodeAddresses
 }

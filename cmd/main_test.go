@@ -13,8 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVectorDatabase(t *testing.T) {
-	storage, err := db.NewStorage("data/test_vectors.db")
+func TestDistributedVectorDatabase(t *testing.T) {
+	nodeAddresses := generateNodeAddresses("localhost", 3401, 3420)
+
+	storage, err := db.NewDistributedStorage(nodeAddresses)
 	assert.NoError(t, err)
 	defer storage.Close()
 

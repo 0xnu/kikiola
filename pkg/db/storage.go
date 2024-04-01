@@ -1,14 +1,132 @@
 package db
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/tidwall/buntdb"
 )
+
+type DistributedStorage struct {
+	nodes []*Storage
+	mutex sync.RWMutex
+}
+
+func NewDistributedStorage(nodeAddresses []string) (*DistributedStorage, error) {
+	var nodes []*Storage
+
+	for _, address := range nodeAddresses {
+		dbPath := fmt.Sprintf("data/node_%s.db", address)
+		storage, err := NewStorage(dbPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create storage for node %s: %v", address, err)
+		}
+		nodes = append(nodes, storage)
+	}
+
+	return &DistributedStorage{
+		nodes: nodes,
+	}, nil
+}
+
+func (ds *DistributedStorage) Insert(vector *Vector) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(vector.ID)
+	return ds.nodes[nodeIndex].Insert(vector)
+}
+
+func (ds *DistributedStorage) Get(id string) (*Vector, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].Get(id)
+}
+
+func (ds *DistributedStorage) Delete(id string) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].Delete(id)
+}
+
+func (ds *DistributedStorage) GetAll() ([]*Vector, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	var vectors []*Vector
+	for _, node := range ds.nodes {
+		nodeVectors, err := node.GetAll()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get vectors from node: %v", err)
+		}
+		vectors = append(vectors, nodeVectors...)
+	}
+
+	return vectors, nil
+}
+
+func (ds *DistributedStorage) Update(id string, metadata map[string]string) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].Update(id, metadata)
+}
+
+func (ds *DistributedStorage) Close() error {
+	for _, node := range ds.nodes {
+		err := node.Close()
+		if err != nil {
+			return fmt.Errorf("failed to close node storage: %v", err)
+		}
+	}
+	return nil
+}
+
+func (ds *DistributedStorage) getNodeIndex(id string) int {
+	hash := sha256.New()
+
+	hash.Write([]byte(id))
+
+	hashValue := hash.Sum(nil)
+
+	hashUint64 := binary.BigEndian.Uint64(hashValue)
+
+	bestNodeIndex := 0
+	minDistance := uint64(math.MaxUint64)
+
+	for i := range ds.nodes {
+		nodeIndexBytes := make([]byte, 8)
+		binary.BigEndian.PutUint64(nodeIndexBytes, uint64(i))
+
+		nodeHash := sha256.New()
+
+		nodeHash.Write(nodeIndexBytes)
+
+		nodeHashValue := nodeHash.Sum(nil)
+
+		nodeHashUint64 := binary.BigEndian.Uint64(nodeHashValue)
+
+		distance := hashUint64 ^ nodeHashUint64
+
+		if distance < minDistance {
+			bestNodeIndex = i
+			minDistance = distance
+		}
+	}
+
+	return bestNodeIndex
+}
 
 type Storage struct {
 	db    *buntdb.DB

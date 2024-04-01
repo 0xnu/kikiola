@@ -29,7 +29,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 2. Retrieve a vector by ID:
 
 ```sh
-curl -X GET http://localhost:3400/vectors/badf35f6-e291-46cb-986b-01d57e6df80b
+curl -X GET http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb8674
 ```
 
 3. Delete a vector by ID:
@@ -165,7 +165,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 curl -X POST -H "Content-Type: application/json" -d '{
   "vector": {
     "ID": "query_vector",
-    "Embedding": [0.1, 0.2, 0.3]
+    "Embedding": [0.02329646609723568, -0.044301047921180725, -0.014636795036494732]
   },
   "k": 10,
   "indexType": "annoy",

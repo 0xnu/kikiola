@@ -11,12 +11,12 @@ import (
 )
 
 type Server struct {
-	storage *db.Storage
+	storage *db.DistributedStorage
 	index   *index.Index
 	server  *http.Server
 }
 
-func NewServer(storage *db.Storage, index *index.Index) *Server {
+func NewServer(storage *db.DistributedStorage, index *index.Index) *Server {
 	return &Server{
 		storage: storage,
 		index:   index,
@@ -64,6 +64,7 @@ func (s *Server) handleInsertVector(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleQueryVector(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
+
 	vector, err := s.storage.Get(id)
 	if err != nil {
 		http.Error(w, "Vector not found", http.StatusNotFound)
