@@ -16,18 +16,12 @@ import (
 )
 
 func main() {
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "data/vectors.db"
-	}
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3400"
 	}
 
 	hostAddress := "localhost"
-
 	nodeAddresses := generateNodeAddresses(hostAddress, 3401, 3420)
 
 	storage, err := db.NewDistributedStorage(nodeAddresses)
@@ -61,7 +55,6 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
-
 	log.Println("Server exited properly")
 }
 

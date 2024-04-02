@@ -60,56 +60,71 @@ func (v Vector) Distance(other Vector) (float64, error) {
 }
 
 func (v *Vector) Normalize() {
-	if v.Compressed {
-		if v.QuantizationParams != nil {
-			dequantizedEmbedding := make([]float64, len(v.Embedding))
-			for i := range v.Embedding {
-				dequantizedEmbedding[i] = v.QuantizationParams.Dequantize(v.Embedding[i])
-			}
-			norm := 0.0
-			for _, value := range dequantizedEmbedding {
-				norm += value * value
-			}
-			norm = math.Sqrt(norm)
-			if norm > 0 {
-				for i := range dequantizedEmbedding {
-					dequantizedEmbedding[i] /= norm
-				}
-			}
-			for i := range v.Embedding {
-				v.Embedding[i] = v.QuantizationParams.Quantize(dequantizedEmbedding[i])
-			}
-		} else if len(v.PruningMask) > 0 {
-			norm := 0.0
-			for i, value := range v.Embedding {
-				if !v.PruningMask[i] {
-					norm += value * value
-				}
-			}
-			norm = math.Sqrt(norm)
-			if norm > 0 {
-				for i := range v.Embedding {
-					if !v.PruningMask[i] {
-						v.Embedding[i] /= norm
-					}
-				}
-			}
-		} else if len(v.SparseIndices) > 0 {
-			norm := 0.0
-			for _, value := range v.Embedding {
-				norm += value * value
-			}
-			norm = math.Sqrt(norm)
-			if norm > 0 {
-				for i := range v.Embedding {
-					v.Embedding[i] /= norm
-				}
-			}
-		}
-
+	if !v.Compressed {
+		v.normalizeUncompressed()
 		return
 	}
 
+	if v.QuantizationParams != nil {
+		v.normalizeQuantized()
+	} else if len(v.PruningMask) > 0 {
+		v.normalizePruned()
+	} else if len(v.SparseIndices) > 0 {
+		v.normalizeSparse()
+	}
+}
+
+func (v *Vector) normalizeUncompressed() {
+	norm := 0.0
+	for _, value := range v.Embedding {
+		norm += value * value
+	}
+	norm = math.Sqrt(norm)
+	if norm > 0 {
+		for i := range v.Embedding {
+			v.Embedding[i] /= norm
+		}
+	}
+}
+
+func (v *Vector) normalizeQuantized() {
+	dequantizedEmbedding := make([]float64, len(v.Embedding))
+	for i := range v.Embedding {
+		dequantizedEmbedding[i] = v.QuantizationParams.Dequantize(v.Embedding[i])
+	}
+	norm := 0.0
+	for _, value := range dequantizedEmbedding {
+		norm += value * value
+	}
+	norm = math.Sqrt(norm)
+	if norm > 0 {
+		for i := range dequantizedEmbedding {
+			dequantizedEmbedding[i] /= norm
+		}
+	}
+	for i := range v.Embedding {
+		v.Embedding[i] = v.QuantizationParams.Quantize(dequantizedEmbedding[i])
+	}
+}
+
+func (v *Vector) normalizePruned() {
+	norm := 0.0
+	for i, value := range v.Embedding {
+		if !v.PruningMask[i] {
+			norm += value * value
+		}
+	}
+	norm = math.Sqrt(norm)
+	if norm > 0 {
+		for i := range v.Embedding {
+			if !v.PruningMask[i] {
+				v.Embedding[i] /= norm
+			}
+		}
+	}
+}
+
+func (v *Vector) normalizeSparse() {
 	norm := 0.0
 	for _, value := range v.Embedding {
 		norm += value * value
