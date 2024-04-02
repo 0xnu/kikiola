@@ -70,6 +70,7 @@ go test ./...
 + [Google Cloud Platform (GCP)](./docs/GCP.md)
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_docs_images.md) - Documents and Images
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome.md) - Genome Sequence
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome_huggingface.ipynb) - Hugging Face 🤗
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_10k.md) - SEC Form 10-K
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_videos.md) - Videos
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_audios.md) - Audios
