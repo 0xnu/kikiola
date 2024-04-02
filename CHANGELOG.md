@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.13 - 2024-04-02
+* Objects Tests
+
 ## 1.0.12 - 2024-04-02
 * Objects (e.g., document, image, audio, video, or any other file type)
 
@@ -17,6 +20,8 @@
 
 ## 1.0.7 - 2024-03-29
 * Generate and Store Embeddings Tutorial
+
+## 1.0.6 - 2024-03-29
 * Refinements
 
 ## 1.0.5 - 2024-03-28
@@ -24,6 +29,15 @@
 
 ## 1.0.4 - 2024-03-27
 * JavaScript and Python Tutorials
+
+## 1.0.3 - 2024-03-27
 * GitHub Action
+
+## 1.0.2 - 2024-03-27
+* GitHub Action
+
+## 1.0.1 - 2024-03-27
 * Benchmark
+
+## 1.0.0 - 2024-03-27
 * Initial Release

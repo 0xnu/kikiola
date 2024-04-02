@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/0xnu/kikiola/pkg/db"
@@ -120,4 +123,71 @@ func TestDistributedVectorDatabase(t *testing.T) {
 	resp, err = http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+
+	file, err := os.Open("oxford.jpg")
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("object", "oxford.jpg")
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+
+	metadata := map[string]string{
+		"id":       "0539f0ac-6771-47c6-8f5e-2cdf272a6de0",
+		"name":     "Oxford",
+		"category": "Images",
+	}
+	metadataJSON, _ := json.Marshal(metadata)
+	_ = writer.WriteField("data", string(metadataJSON))
+	err = writer.Close()
+	assert.NoError(t, err)
+
+	resp, err = http.Post(ts.URL+"/objects", writer.FormDataContentType(), body)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	resp, err = http.Get(ts.URL + "/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// req, err = http.NewRequest(http.MethodDelete, ts.URL+"/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0", nil)
+	// assert.NoError(t, err)
+	// resp, err = http.DefaultClient.Do(req)
+	// assert.NoError(t, err)
+	// assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	updateMetadata := map[string]string{
+		"name":     "Oxford High Street",
+		"category": "Image",
+	}
+	updateMetadataJSON, _ := json.Marshal(updateMetadata)
+	req, err = http.NewRequest(http.MethodPatch, ts.URL+"/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/metadata", bytes.NewBuffer(updateMetadataJSON))
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	file, err = os.Open("oxford_high_street.webp")
+	assert.NoError(t, err)
+	defer file.Close()
+
+	body = &bytes.Buffer{}
+	writer = multipart.NewWriter(body)
+	part, err = writer.CreateFormFile("object", "oxford_high_street.webp")
+	assert.NoError(t, err)
+	_, err = io.Copy(part, file)
+	assert.NoError(t, err)
+	err = writer.Close()
+	assert.NoError(t, err)
+
+	req, err = http.NewRequest(http.MethodPatch, ts.URL+"/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/content", body)
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	resp, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
