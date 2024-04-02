@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -17,6 +18,16 @@ type DistributedStorage struct {
 	nodes []*Storage
 	mutex sync.RWMutex
 }
+
+type Object struct {
+	ID       string            `json:"id"`
+	Object   []byte            `json:"object"`
+	Metadata map[string]string `json:"metadata"`
+}
+
+var ErrNotFound = errors.New("object not found")
+var ErrObjectNotFound = errors.New("object not found")
+var ErrVectorNotFound = errors.New("vector not found")
 
 func NewDistributedStorage(nodeAddresses []string) (*DistributedStorage, error) {
 	var nodes []*Storage
@@ -35,37 +46,37 @@ func NewDistributedStorage(nodeAddresses []string) (*DistributedStorage, error) 
 	}, nil
 }
 
-func (ds *DistributedStorage) Insert(vector *Vector) error {
+func (ds *DistributedStorage) InsertVector(vector *Vector) error {
 	ds.mutex.Lock()
 	defer ds.mutex.Unlock()
 
 	nodeIndex := ds.getNodeIndex(vector.ID)
-	return ds.nodes[nodeIndex].Insert(vector)
+	return ds.nodes[nodeIndex].InsertVector(vector)
 }
 
-func (ds *DistributedStorage) Get(id string) (*Vector, error) {
+func (ds *DistributedStorage) GetVector(id string) (*Vector, error) {
 	ds.mutex.RLock()
 	defer ds.mutex.RUnlock()
 
 	nodeIndex := ds.getNodeIndex(id)
-	return ds.nodes[nodeIndex].Get(id)
+	return ds.nodes[nodeIndex].GetVector(id)
 }
 
-func (ds *DistributedStorage) Delete(id string) error {
+func (ds *DistributedStorage) DeleteVector(id string) error {
 	ds.mutex.Lock()
 	defer ds.mutex.Unlock()
 
 	nodeIndex := ds.getNodeIndex(id)
-	return ds.nodes[nodeIndex].Delete(id)
+	return ds.nodes[nodeIndex].DeleteVector(id)
 }
 
-func (ds *DistributedStorage) GetAll() ([]*Vector, error) {
+func (ds *DistributedStorage) GetAllVectors() ([]*Vector, error) {
 	ds.mutex.RLock()
 	defer ds.mutex.RUnlock()
 
 	var vectors []*Vector
 	for _, node := range ds.nodes {
-		nodeVectors, err := node.GetAll()
+		nodeVectors, err := node.GetAllVectors()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get vectors from node: %v", err)
 		}
@@ -75,12 +86,60 @@ func (ds *DistributedStorage) GetAll() ([]*Vector, error) {
 	return vectors, nil
 }
 
-func (ds *DistributedStorage) Update(id string, metadata map[string]string) error {
+func (ds *DistributedStorage) UpdateVectorMetadata(id string, metadata map[string]string) error {
 	ds.mutex.Lock()
 	defer ds.mutex.Unlock()
 
 	nodeIndex := ds.getNodeIndex(id)
-	return ds.nodes[nodeIndex].Update(id, metadata)
+	return ds.nodes[nodeIndex].UpdateVectorMetadata(id, metadata)
+}
+
+func (ds *DistributedStorage) InsertObject(object *Object) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(object.ID)
+	return ds.nodes[nodeIndex].InsertObject(object)
+}
+
+func (ds *DistributedStorage) GetObject(id string) (*Object, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].GetObject(id)
+}
+
+func (ds *DistributedStorage) DeleteObject(id string) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].DeleteObject(id)
+}
+
+func (ds *DistributedStorage) GetAllObjects() ([]*Object, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	var objects []*Object
+	for _, node := range ds.nodes {
+		nodeObjects, err := node.GetAllObjects()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get objects from node: %v", err)
+		}
+		objects = append(objects, nodeObjects...)
+	}
+
+	return objects, nil
+}
+
+func (ds *DistributedStorage) UpdateObjectMetadata(id string, metadata map[string]string) error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	nodeIndex := ds.getNodeIndex(id)
+	return ds.nodes[nodeIndex].UpdateObjectMetadata(id, metadata)
 }
 
 func (ds *DistributedStorage) Close() error {
@@ -151,17 +210,17 @@ func NewStorage(dbPath string) (*Storage, error) {
 	return storage, nil
 }
 
-func (s *Storage) Insert(vector *Vector) error {
+func (s *Storage) InsertVector(vector *Vector) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	data, err := json.Marshal(vector)
+	serializedData, err := json.Marshal(vector)
 	if err != nil {
 		return fmt.Errorf("failed to marshal vector: %v", err)
 	}
 
 	err = s.db.Update(func(tx *buntdb.Tx) error {
-		_, _, err := tx.Set(vector.ID, string(data), nil)
+		_, _, err := tx.Set(vector.ID, string(serializedData), nil)
 		return err
 	})
 	if err != nil {
@@ -171,7 +230,7 @@ func (s *Storage) Insert(vector *Vector) error {
 	return nil
 }
 
-func (s *Storage) Get(id string) (*Vector, error) {
+func (s *Storage) GetVector(id string) (*Vector, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -179,6 +238,9 @@ func (s *Storage) Get(id string) (*Vector, error) {
 	err := s.db.View(func(tx *buntdb.Tx) error {
 		val, err := tx.Get(id)
 		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return ErrVectorNotFound
+			}
 			return err
 		}
 		data = val
@@ -197,13 +259,19 @@ func (s *Storage) Get(id string) (*Vector, error) {
 	return &vector, nil
 }
 
-func (s *Storage) Delete(id string) error {
+func (s *Storage) DeleteVector(id string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	err := s.db.Update(func(tx *buntdb.Tx) error {
 		_, err := tx.Delete(id)
-		return err
+		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return ErrVectorNotFound
+			}
+			return err
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete vector: %v", err)
@@ -212,7 +280,7 @@ func (s *Storage) Delete(id string) error {
 	return nil
 }
 
-func (s *Storage) GetAll() ([]*Vector, error) {
+func (s *Storage) GetAllVectors() ([]*Vector, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -236,7 +304,7 @@ func (s *Storage) GetAll() ([]*Vector, error) {
 	return vectors, nil
 }
 
-func (s *Storage) Update(id string, metadata map[string]string) error {
+func (s *Storage) UpdateVectorMetadata(id string, metadata map[string]string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -245,7 +313,7 @@ func (s *Storage) Update(id string, metadata map[string]string) error {
 		val, err := tx.Get(id)
 		if err != nil {
 			if err == buntdb.ErrNotFound {
-				return fmt.Errorf("vector not found")
+				return ErrVectorNotFound
 			}
 			return fmt.Errorf("failed to get vector: %v", err)
 		}
@@ -276,6 +344,145 @@ func (s *Storage) Update(id string, metadata map[string]string) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to update vector: %v", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) InsertObject(object *Object) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	serializedData, err := json.Marshal(object)
+	if err != nil {
+		return fmt.Errorf("failed to marshal object: %v", err)
+	}
+
+	err = s.db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(object.ID, string(serializedData), nil)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert object: %v", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetObject(id string) (*Object, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	var data string
+	err := s.db.View(func(tx *buntdb.Tx) error {
+		val, err := tx.Get(id)
+		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return ErrObjectNotFound
+			}
+			return err
+		}
+		data = val
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object: %v", err)
+	}
+
+	var object Object
+	err = json.Unmarshal([]byte(data), &object)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal object: %v", err)
+	}
+
+	return &object, nil
+}
+
+func (s *Storage) DeleteObject(id string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	err := s.db.Update(func(tx *buntdb.Tx) error {
+		_, err := tx.Delete(id)
+		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return ErrObjectNotFound
+			}
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete object: %v", err)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetAllObjects() ([]*Object, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	var objects []*Object
+	err := s.db.View(func(tx *buntdb.Tx) error {
+		err := tx.Ascend("", func(key, value string) bool {
+			var object Object
+			err := json.Unmarshal([]byte(value), &object)
+			if err != nil {
+				return false
+			}
+			objects = append(objects, &object)
+			return true
+		})
+		return err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all objects: %v", err)
+	}
+
+	return objects, nil
+}
+
+func (s *Storage) UpdateObjectMetadata(id string, metadata map[string]string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	var object Object
+	err := s.db.View(func(tx *buntdb.Tx) error {
+		val, err := tx.Get(id)
+		if err != nil {
+			if err == buntdb.ErrNotFound {
+				return ErrObjectNotFound
+			}
+			return fmt.Errorf("failed to get object: %v", err)
+		}
+
+		err = json.Unmarshal([]byte(val), &object)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal object: %v", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	for key, value := range metadata {
+		object.Metadata[key] = value
+	}
+
+	data, err := json.Marshal(object)
+	if err != nil {
+		return fmt.Errorf("failed to marshal object: %v", err)
+	}
+
+	err = s.db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(id, string(data), nil)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update object: %v", err)
 	}
 
 	return nil

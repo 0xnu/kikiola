@@ -21,12 +21,10 @@ func NewIndex(storage *db.DistributedStorage) (*Index, error) {
 		storage: storage,
 		index:   make(map[string][]*db.Vector),
 	}
-
 	err := index.buildIndex()
 	if err != nil {
 		return nil, err
 	}
-
 	return index, nil
 }
 
@@ -34,7 +32,7 @@ func (i *Index) Insert(vector *db.Vector) error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
-	err := i.storage.Insert(vector)
+	err := i.storage.InsertVector(vector)
 	if err != nil {
 		return err
 	}
@@ -51,7 +49,7 @@ func (i *Index) Delete(id string) error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
-	vector, err := i.storage.Get(id)
+	vector, err := i.storage.GetVector(id)
 	if err != nil {
 		return err
 	}
@@ -61,7 +59,7 @@ func (i *Index) Delete(id string) error {
 		i.index[key] = removeVector(i.index[key], vector)
 	}
 
-	err = i.storage.Delete(id)
+	err = i.storage.DeleteVector(id)
 	if err != nil {
 		return err
 	}
@@ -97,7 +95,7 @@ func (i *Index) Search(vector *db.Vector, k int) ([]*db.Vector, error) {
 }
 
 func (i *Index) buildIndex() error {
-	vectors, err := i.storage.GetAll()
+	vectors, err := i.storage.GetAllVectors()
 	if err != nil {
 		return err
 	}
@@ -134,9 +132,11 @@ func cosineSimilarity(v1, v2 db.Vector) (float64, error) {
 		if len(v1.Embedding) != len(v2.Embedding) {
 			return 0, errors.New("embedding dimensions mismatch")
 		}
+
 		dotProduct := 0.0
 		normV1 := 0.0
 		normV2 := 0.0
+
 		for i := range v1.Embedding {
 			v1Val := v1.QuantizationParams.Dequantize(v1.Embedding[i])
 			v2Val := v2.QuantizationParams.Dequantize(v2.Embedding[i])
@@ -144,25 +144,31 @@ func cosineSimilarity(v1, v2 db.Vector) (float64, error) {
 			normV1 += v1Val * v1Val
 			normV2 += v2Val * v2Val
 		}
+
 		if normV1 == 0 || normV2 == 0 {
 			return 0, nil
 		}
+
 		return dotProduct / (math.Sqrt(normV1) * math.Sqrt(normV2)), nil
 	}
 
 	if len(v1.Embedding) != len(v2.Embedding) {
 		return 0, errors.New("embedding dimensions mismatch")
 	}
+
 	dotProduct := 0.0
 	normV1 := 0.0
 	normV2 := 0.0
+
 	for i := range v1.Embedding {
 		dotProduct += v1.Embedding[i] * v2.Embedding[i]
 		normV1 += v1.Embedding[i] * v1.Embedding[i]
 		normV2 += v2.Embedding[i] * v2.Embedding[i]
 	}
+
 	if normV1 == 0 || normV2 == 0 {
 		return 0, nil
 	}
+
 	return dotProduct / (math.Sqrt(normV1) * math.Sqrt(normV2)), nil
 }

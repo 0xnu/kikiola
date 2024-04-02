@@ -5,9 +5,14 @@ Kikiola provides the following API endpoints:
 +  `POST /vectors`: Insert a new vector
 +  `GET /vectors/{id}`: Retrieve a vector by ID
 +  `DELETE /vectors/{id}`: Delete a vector by ID
++  `PATCH vectors/{id}/metadata`: Update the metadata of a vector
 +  `GET /query/{id}`: Retrieve the original text content associated with an embedding ID
 +  `POST /search`: Search for the nearest neighbours of a vector
-+  `PATCH vectors/{id}/metadata`: Update the metadata of a vector
++  `POST /objects`: Insert a new object (e.g., document, image, audio, video, or any other file type)
++  `GET /objects/{id}`: Retrieve an object by ID
++  `DELETE /objects/{id}`: Delete an object by ID
++  `PATCH /objects/{id}/metadata`: Update the metadata of an object
++  `PATCH /objects/{id}/content`: Update the content of an object by uploading a new file
 
 #### cURL Examples
 
@@ -94,19 +99,19 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/vectors
 ```
 
-7. Retrieve the original text content associated with an embedding ID
+7. Retrieve the original text content associated with an embedding ID:
 
 ```sh
 curl -X GET "http://localhost:3400/query/83635f86-56b3-4bdd-a9bf-428dcebb8674"
 ```
 
-8. Update the metadata of a vector
+8. Update the metadata of a vector:
 
 ```sh
 curl -X PATCH "http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb8674/metadata" -H "Content-Type: application/json" -d '{"metadata": {"name": "PDF Embeddings", "category": "pdf"}}'
 ```
 
-9. Hybrid search (combining sparse embedding and traditional keyword search)
+9. Hybrid search (combining sparse embedding and traditional keyword search):
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -119,7 +124,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-10. Reranking of search results
+10. Reranking of search results:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -132,7 +137,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-11. Setting Alpha value (influence factor) for hybrid search
+11. Setting Alpha value (influence factor) for hybrid search:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -146,7 +151,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-12. Support for more distance/similarity metrics beyond just cosine similarity
+12. Support for more distance/similarity metrics beyond just cosine similarity:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -159,7 +164,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-13. ANN (Approximate Nearest Neighbor) indexing for faster search on large datasets
+13. ANN (Approximate Nearest Neighbor) indexing for faster search on large datasets:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -175,7 +180,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-14. Ability to explain individual search results
+14. Ability to explain individual search results:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -188,7 +193,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:3400/search
 ```
 
-15. Customizable relevance tuning and boosting of results
+15. Customizable relevance tuning and boosting of results:
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{
@@ -202,6 +207,47 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "weight": 2.0
   }
 }' http://localhost:3400/search
+```
+
+16. Insert a new object:
+
+```sh
+curl -X POST -H "Content-Type: multipart/form-data" -F "data={
+  \"id\": \"0539f0ac-6771-47c6-8f5e-2cdf272a6de0\",
+  \"metadata\": {
+    \"name\": \"Oxford\",
+    \"category\": \"Images\"
+  }
+};type=application/json" -F "object=@/oxford.jpg" http://localhost:3400/objects
+```
+
+17. Retrieve an object by ID:
+
+```sh
+curl -X GET http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0
+```
+
+18. Delete an object by ID:
+
+```sh
+curl -X DELETE http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0
+```
+
+19. PATCH an object metadata by ID:
+
+```sh
+curl -X PATCH -H "Content-Type: application/json" -d '{
+  "metadata": {
+    "name": "Oxford High Street",
+    "category": "Image"
+  }
+}' http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/metadata
+```
+
+20. PATCH an object content with a new one by ID:
+
+```sh
+curl -X PATCH -H "Content-Type: multipart/form-data" -F "object=@/oxford_high_street.webp" http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/content
 ```
 
 ### Integration with Other Applications or Systems
