@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.12 - 2024-04-02
+* Objects (e.g., document, image, audio, video, or any other file type)
+
 ## 1.0.11 - 2024-04-01
 * Distributed Storage
 
