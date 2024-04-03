@@ -72,7 +72,7 @@ go test ./...
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_docs_images.md) - Documents and Images
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome.md) - Genome Sequence
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_genome_huggingface.ipynb) - Hugging Face 🤗
-+ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_10k_huggingface.ipynb) - SEC Form 10-K - Be a responsible human and use the [EDGAR API](https://www.sec.gov/edgar/sec-api-documentation). 😎
++ [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_10k_huggingface.ipynb) - SEC Form 10-K - Be a responsible Human and use the [EDGAR API](https://www.sec.gov/edgar/sec-api-documentation). 😎
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_videos.md) - Videos
 + [Generate and Store Embeddings](./tutorials/generate_and_store_embeddings_audios.md) - Audios
 
