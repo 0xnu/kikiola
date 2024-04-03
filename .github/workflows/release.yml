@@ -37,9 +37,10 @@ jobs:
           mkdir -p package/usr/bin
           cp main package/usr/bin
           mkdir -p package/DEBIAN
+          version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
           cat > package/DEBIAN/control <<EOF
           Package: kikiola
-          Version: ${{ github.ref_name }}
+          Version: $version
           Architecture: amd64
           Maintainer: Finbarrs Oketunji <f@finbarrs.eu>
           Description: Kikiola is a high-performance vector database written in Go.
