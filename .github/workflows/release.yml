@@ -24,8 +24,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest]
-        goarch: [amd64]
+        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64 
+        goos: [linux, windows, darwin]
+        goarch: ["386", amd64, arm]
+        exclude:
+          - goos: darwin
+            goarch: arm
+          - goos: darwin
+            goarch: "386"
     steps:
       - uses: actions/checkout@v2
       - name: Build Go Binary
@@ -34,7 +40,7 @@ jobs:
       - uses: wangyoucao577/go-release-action@v1.12
         with:
           github_token: ${{ secrets.OXNU_TOKEN }}
-          goos: ${{ matrix.os == 'ubuntu-18.04' && 'linux' || 'darwin' }}
+          goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           goversion: "https://golang.org/dl/go1.16.4.linux-amd64.tar.gz"
           ldflags: -w -s -X main.COMMIT=${{ github.sha }} -X main.GOVERSION=go1.16.4.linux-amd64
