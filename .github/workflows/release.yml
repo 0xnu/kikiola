@@ -36,6 +36,14 @@ jobs:
           go build -o main ./cmd/main.go
           mkdir -p package/usr/bin
           cp main package/usr/bin
+          mkdir -p package/DEBIAN
+          cat > package/DEBIAN/control <<EOF
+          Package: kikiola
+          Version: ${{ github.ref_name }}
+          Architecture: amd64
+          Maintainer: Finbarrs Oketunji <f@finbarrs.eu>
+          Description: Kikiola is a high-performance vector database written in Go.
+          EOF
           dpkg-deb --build package kikiola.deb
       - name: Build RPM package
         if: matrix.os == 'ubuntu-latest'
