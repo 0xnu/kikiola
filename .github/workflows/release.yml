@@ -16,3 +16,46 @@ jobs:
           changelog: CHANGELOG.md
           branch: main
           token: ${{ secrets.OXNU_TOKEN }}
+
+  build-packages:
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.20.x'
+      - name: Build DEB package
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+          go build -o main ./cmd/main.go
+          mkdir -p package/usr/bin
+          cp main package/usr/bin
+          dpkg-deb --build package kikiola.deb
+      - name: Build RPM package
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+          tar -czf kikiola-${{ github.ref_name }}.tar.gz .
+          rpmbuild -bb kikiola.spec --define "version ${{ github.ref_name }}"
+      - name: Build Linux binary
+        run: |
+          go build -o kikiola-linux-amd64 ./cmd/main.go
+      - name: Build macOS binary
+        if: matrix.os == 'macos-latest'
+        run: |
+          go build -o kikiola-macos-amd64 ./cmd/main.go
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: |
+            *.deb
+            *.rpm
+            kikiola-linux-amd64
+            kikiola-macos-amd64
