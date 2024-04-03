@@ -6,6 +6,7 @@ on:
       - v[0-9]+.*
 
 jobs:
+
   create-release:
     if: github.repository_owner == '0xnu'
     runs-on: ubuntu-latest
@@ -17,66 +18,24 @@ jobs:
           branch: main
           token: ${{ secrets.OXNU_TOKEN }}
 
-  build-packages:
+  releases-matrix:
+    name: Release Go Binary
     needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-18.04, macos-latest]
+        goarch: [amd64]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.20.x'
-      - name: Build DEB package
-        if: matrix.os == 'ubuntu-latest'
+      - uses: actions/checkout@v2
+      - name: Build Go Binary
         run: |
-          sudo apt-get update
-          sudo apt-get install -y dpkg-dev
           go build -o main ./cmd/main.go
-          mkdir -p package/usr/bin
-          cp main package/usr/bin
-          mkdir -p package/DEBIAN
-          version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          cat > package/DEBIAN/control <<EOF
-          Package: kikiola
-          Version: $version
-          Architecture: amd64
-          Maintainer: Finbarrs Oketunji <f@finbarrs.eu>
-          Description: Kikiola is a high-performance vector database written in Go.
-          EOF
-          dpkg-deb --build package kikiola.deb
-      - name: Build RPM package
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rpm
-          version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          tar --warning=no-file-changed -czf kikiola-$version.tar.gz --exclude=kikiola-$version.tar.gz .
-          rpmbuild -bb kikiola.spec --define "version $version"
-      - name: Build Linux binary
-        run: |
-          go build -o kikiola-linux-amd64 ./cmd/main.go
-      - name: Build macOS binary
-        if: matrix.os == 'macos-latest'
-        run: |
-          go build -o kikiola-macos-amd64 ./cmd/main.go
-      - uses: actions/upload-artifact@v4
+      - uses: wangyoucao577/go-release-action@v1.12
         with:
-          name: packages
-          path: |
-            *.deb
-            *.rpm
-            kikiola-linux-amd64
-            kikiola-macos-amd64
-      - name: Release packages
-        if: matrix.os == 'ubuntu-latest'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            *.deb
-            *.rpm
-            kikiola-linux-amd64
-            kikiola-macos-amd64
-        env:
-          token: ${{ secrets.OXNU_TOKEN }}
+          github_token: ${{ secrets.OXNU_TOKEN }}
+          goos: ${{ matrix.os == 'ubuntu-18.04' && 'linux' || 'darwin' }}
+          goarch: ${{ matrix.goarch }}
+          goversion: "https://golang.org/dl/go1.16.4.linux-amd64.tar.gz"
+          ldflags: -w -s -X main.COMMIT=${{ github.sha }} -X main.GOVERSION=go1.16.4.linux-amd64
+          extra_files: main
