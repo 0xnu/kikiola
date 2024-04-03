@@ -52,7 +52,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rpm
           version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          tar -czf kikiola-$version.tar.gz --exclude=kikiola-$version.tar.gz .
+          tar --warning=no-file-changed -czf kikiola-$version.tar.gz --exclude=kikiola-$version.tar.gz .
           rpmbuild -bb kikiola.spec --define "version $version"
       - name: Build Linux binary
         run: |
