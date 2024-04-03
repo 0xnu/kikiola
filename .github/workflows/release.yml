@@ -51,8 +51,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y rpm
-          tar -czf kikiola-${{ github.ref_name }}.tar.gz .
-          rpmbuild -bb kikiola.spec --define "version ${{ github.ref_name }}"
+          version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+          tar -czf kikiola-$version.tar.gz --exclude=kikiola-$version.tar.gz .
+          rpmbuild -bb kikiola.spec --define "version $version"
       - name: Build Linux binary
         run: |
           go build -o kikiola-linux-amd64 ./cmd/main.go
@@ -68,3 +69,14 @@ jobs:
             *.rpm
             kikiola-linux-amd64
             kikiola-macos-amd64
+      - name: Release packages
+        if: matrix.os == 'ubuntu-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.deb
+            *.rpm
+            kikiola-linux-amd64
+            kikiola-macos-amd64
+        env:
+          token: ${{ secrets.OXNU_TOKEN }}
