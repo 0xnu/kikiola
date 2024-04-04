@@ -18,31 +18,24 @@ jobs:
           branch: main
           token: ${{ secrets.OXNU_TOKEN }}
 
-  releases-matrix:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/amd64, linux/arm64
-        goos: [linux, windows, darwin]
-        goarch: ["386", amd64, arm64]
-        exclude:
-          - goos: darwin
-            goarch: "386"
-          - goos: windows
-            goarch: arm64
+  audit:
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.20
-      - name: Build Go Binary
-        run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags "-w -s -X main.COMMIT=${{ github.sha }} -X main.GOVERSION=go1.20" -o main-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/main.go
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: main-*
-        env:
-          token: ${{ secrets.OXNU_TOKEN }}
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.20
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Run tests
+      run: go test -race -vet=off ./...
