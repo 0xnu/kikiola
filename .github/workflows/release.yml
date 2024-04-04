@@ -19,27 +19,30 @@ jobs:
           token: ${{ secrets.OXNU_TOKEN }}
 
   releases-matrix:
-    name: Release Go Binary
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64 
+        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/amd64, linux/arm64
         goos: [linux, windows, darwin]
-        goarch: ["386", amd64, arm]
+        goarch: ["386", amd64, arm64]
         exclude:
           - goos: darwin
-            goarch: arm
-          - goos: darwin
             goarch: "386"
+          - goos: windows
+            goarch: arm64
     steps:
-    - uses: actions/checkout@v2
-    - name: Build Go Binary
-      run: |
-        go build -o main ./cmd/main.go
-    - uses: wangyoucao577/go-release-action@v1.12
-      with:
-        github_token: ${{ secrets.OXNU_TOKEN }}
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
-        goversion: "https://golang.org/dl/go1.16.4.linux-amd64.tar.gz"
-        ldflags: -w -s -X main.COMMIT=${{ github.sha }} -X main.GOVERSION=go1.16.4.linux-amd64
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.4
+      - name: Build Go Binary
+        run: |
+          go build -ldflags "-w -s -X main.COMMIT=${{ github.sha }} -X main.GOVERSION=go1.16.4" -o main ./cmd/main.go
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
