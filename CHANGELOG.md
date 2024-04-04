@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.18 - 2024-04-04
+* Bug Fixes
+
 ## 1.0.17 - 2024-04-04
 * Bug Fixes
 
