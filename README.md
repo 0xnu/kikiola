@@ -10,12 +10,13 @@ Kikiola is a high-performance vector database written in [Go](https://go.dev). I
 ### Features
 
 + Tensor Compression
++ Support multilingual embedding
 + Support for high-dimensional vectors
 + Handles concurrency and multiple writes
-+ Text embedding support for text-based queries
 + Simple and intuitive API for easy integration
 + Indexing techniques for fast similarity search
 + Fast and efficient vector storage and retrieval
++ Text embedding support for text-based queries
 + Scalable architecture for handling large datasets
 + Distributed Storage: multiple nodes or shards for scalability
 + Objects (e.g., document, image, audio, video, or any other file type)

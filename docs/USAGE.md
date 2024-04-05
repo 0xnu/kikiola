@@ -34,7 +34,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 2. Retrieve a vector by ID:
 
 ```sh
-curl -X GET http://localhost:3400/vectors/83635f86-56b3-4bdd-a9bf-428dcebb8674
+curl -X GET http://localhost:3400/vectors/badf35f6-e291-46cb-986b-01d57e6df80b
 ```
 
 3. Delete a vector by ID:
@@ -216,9 +216,9 @@ curl -X POST -H "Content-Type: multipart/form-data" -F "data={
   \"id\": \"0539f0ac-6771-47c6-8f5e-2cdf272a6de0\",
   \"metadata\": {
     \"name\": \"Oxford\",
-    \"category\": \"Images\"
+    \"category\": \"Image\"
   }
-};type=application/json" -F "object=@/oxford.jpg" http://localhost:3400/objects
+};type=application/json" -F "object=@oxford.jpg" http://localhost:3400/objects
 ```
 
 17. Retrieve an object by ID:
@@ -239,7 +239,7 @@ curl -X DELETE http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de
 curl -X PATCH -H "Content-Type: application/json" -d '{
   "metadata": {
     "name": "Oxford High Street",
-    "category": "Image"
+    "category": "Images"
   }
 }' http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/metadata
 ```
@@ -247,7 +247,7 @@ curl -X PATCH -H "Content-Type: application/json" -d '{
 20. PATCH an object content with a new one by ID:
 
 ```sh
-curl -X PATCH -H "Content-Type: multipart/form-data" -F "object=@/oxford_high_street.webp" http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/content
+curl -X PATCH -H "Content-Type: multipart/form-data" -F "object=@oxford_high_street.webp" http://localhost:3400/objects/0539f0ac-6771-47c6-8f5e-2cdf272a6de0/content
 ```
 
 ### Integration with Other Applications or Systems

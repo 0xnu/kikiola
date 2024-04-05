@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.22 - 2024-04-04
+* Support multilingual embedding
+
 ## 1.0.21 - 2024-04-04
 * Audit
 
