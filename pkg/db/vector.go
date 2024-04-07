@@ -15,6 +15,7 @@ type Vector struct {
 	QuantizationParams *QuantizationParams
 	PruningMask        []bool
 	SparseIndices      []int
+	Relevance          float64 `json:"relevance"`
 }
 
 func (v Vector) Distance(other Vector) (float64, error) {

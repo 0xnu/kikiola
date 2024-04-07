@@ -488,6 +488,61 @@ func (s *Storage) UpdateObjectMetadata(id string, metadata map[string]string) er
 	return nil
 }
 
+func (s *Storage) GetVectors(ids []string) ([]*Vector, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	var results []string
+	err := s.db.View(func(tx *buntdb.Tx) error {
+		for _, id := range ids {
+			val, err := tx.Get(id)
+			if err != nil {
+				if err == buntdb.ErrNotFound {
+					continue
+				}
+				return fmt.Errorf("failed to get vector with ID %s: %v", id, err)
+			}
+			results = append(results, val)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get vectors: %v", err)
+	}
+
+	vectors := make([]*Vector, 0, len(results))
+	for _, data := range results {
+		var vector Vector
+		err := json.Unmarshal([]byte(data), &vector)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal vector: %v", err)
+		}
+		vectors = append(vectors, &vector)
+	}
+
+	return vectors, nil
+}
+
+func (ds *DistributedStorage) GetVectors(ids []string) ([]*Vector, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	var vectors []*Vector
+	for _, id := range ids {
+		nodeIndex := ds.getNodeIndex(id)
+		vector, err := ds.nodes[nodeIndex].GetVector(id)
+		if err != nil {
+			if errors.Is(err, ErrVectorNotFound) {
+				continue
+			}
+			return nil, fmt.Errorf("failed to get vector with ID %s: %v", id, err)
+		}
+		vectors = append(vectors, vector)
+	}
+
+	return vectors, nil
+}
+
 func (s *Storage) Close() error {
 	return s.db.Close()
 }

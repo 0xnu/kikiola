@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/0xnu/kikiola/pkg/db"
+	"github.com/agnivade/levenshtein"
 )
 
 type Index struct {
@@ -87,11 +89,40 @@ func (i *Index) Search(vector *db.Vector, k int) ([]*db.Vector, error) {
 		return simI > simJ
 	})
 
-	if len(candidates) > k {
-		candidates = candidates[:k]
+	uniqueCandidates := make([]*db.Vector, 0, len(candidates))
+	seenIDs := make(map[string]bool)
+
+	for _, candidate := range candidates {
+		if !seenIDs[candidate.ID] {
+			uniqueCandidates = append(uniqueCandidates, candidate)
+			seenIDs[candidate.ID] = true
+		}
 	}
 
-	return candidates, nil
+	if len(uniqueCandidates) > k {
+		uniqueCandidates = uniqueCandidates[:k]
+	}
+
+	results, err := i.storage.GetVectors(getIDs(uniqueCandidates))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get vectors: %v", err)
+	}
+
+	Rerank(results, vector.Text)
+
+	if len(results) > k {
+		results = results[:k]
+	}
+
+	return results, nil
+}
+
+func getIDs(vectors []*db.Vector) []string {
+	ids := make([]string, len(vectors))
+	for i, vector := range vectors {
+		ids[i] = vector.ID
+	}
+	return ids
 }
 
 func (i *Index) buildIndex() error {
@@ -171,4 +202,39 @@ func cosineSimilarity(v1, v2 db.Vector) (float64, error) {
 	}
 
 	return dotProduct / (math.Sqrt(normV1) * math.Sqrt(normV2)), nil
+}
+
+func Rerank(vectors []*db.Vector, searchQuery string) {
+	for _, vector := range vectors {
+		vector.Relevance = calculateRelevanceScore(vector, searchQuery)
+	}
+	sort.Slice(vectors, func(i, j int) bool {
+		return vectors[i].Relevance > vectors[j].Relevance
+	})
+}
+
+func calculateRelevanceScore(vector *db.Vector, searchQuery string) float64 {
+	score := 0.0
+
+	if strings.Contains(vector.Text, searchQuery) {
+		score += 1.0
+	}
+	for _, value := range vector.Metadata {
+		if strings.Contains(value, searchQuery) {
+			score += 0.5
+		}
+	}
+
+	distance := levenshtein.ComputeDistance(vector.Text, searchQuery)
+	similarity := 1.0 - float64(distance)/float64(max(len(vector.Text), len(searchQuery)))
+	score += similarity
+
+	return score
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

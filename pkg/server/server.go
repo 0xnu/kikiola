@@ -152,20 +152,47 @@ func (s *Server) handleDeleteVector(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSearchVectors(w http.ResponseWriter, r *http.Request) {
-	var searchReq SearchRequest
+	var searchReq struct {
+		Vector *db.Vector `json:"vector"`
+		K      int        `json:"k"`
+	}
+
 	err := json.NewDecoder(r.Body).Decode(&searchReq)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	results, err := s.index.Search(searchReq.Vector, searchReq.K)
-	if err != nil {
-		http.Error(w, "Failed to search vectors", http.StatusInternalServerError)
+	if searchReq.Vector == nil {
+		http.Error(w, "Missing vector in request", http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(results)
+	if searchReq.K <= 0 {
+		http.Error(w, "Invalid value of k", http.StatusBadRequest)
+		return
+	}
+
+	results, err := s.index.Search(searchReq.Vector, searchReq.K)
+	if err != nil {
+		http.Error(w, "Failed to search vectors", http.StatusInternalServerError)
+		log.Printf("Error searching vectors: %v", err)
+		return
+	}
+
+	response := struct {
+		Results []*db.Vector `json:"results"`
+	}{
+		Results: results,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Error encoding response: %v", err)
+		return
+	}
 }
 
 func (s *Server) handleInsertObject(w http.ResponseWriter, r *http.Request) {
