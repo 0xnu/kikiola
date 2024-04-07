@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.23 - 2024-04-04
+* Embedding Reranking with a relevance score
+
 ## 1.0.22 - 2024-04-04
 * Support multilingual embedding
 
